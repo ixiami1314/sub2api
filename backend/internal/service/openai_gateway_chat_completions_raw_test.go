@@ -65,6 +65,9 @@ func TestBuildOpenAIResponsesURL_ProbeURL(t *testing.T) {
 		{"already /responses", "https://api.openai.com/v1/responses", "https://api.openai.com/v1/responses"},
 		{"third-party bare domain", "https://api.deepseek.com", "https://api.deepseek.com/v1/responses"},
 		{"only domain, no scheme", "api.gptgod.online", "api.gptgod.online/v1/responses"},
+		{"zhipu /v4", "https://open.bigmodel.cn/api/coding/paas/v4", "https://open.bigmodel.cn/api/coding/paas/v4/responses"},
+		{"custom /v2", "https://api.example.com/v2", "https://api.example.com/v2/responses"},
+		{"deepseek /v1 suffix", "https://api.deepseek.com/v1", "https://api.deepseek.com/v1/responses"},
 	}
 
 	for _, tt := range tests {

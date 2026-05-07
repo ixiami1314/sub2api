@@ -421,7 +421,7 @@ func (s *OpenAIGatewayService) bufferRawChatCompletions(
 // buildOpenAIChatCompletionsURL 拼接上游 Chat Completions 端点 URL。
 //
 //   - base 已是 /chat/completions：原样返回
-//   - base 以 /v1 结尾：追加 /chat/completions
+//   - base 以版本路径结尾（/v1, /v4 等）：追加 /chat/completions
 //   - 其他情况：追加 /v1/chat/completions
 //
 // 与 buildOpenAIResponsesURL 是姐妹函数。
@@ -430,7 +430,7 @@ func buildOpenAIChatCompletionsURL(base string) string {
 	if strings.HasSuffix(normalized, "/chat/completions") {
 		return normalized
 	}
-	if strings.HasSuffix(normalized, "/v1") {
+	if endsWithVersionPath(normalized) {
 		return normalized + "/chat/completions"
 	}
 	return normalized + "/v1/chat/completions"

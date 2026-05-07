@@ -3045,6 +3045,10 @@ export default {
       setupTokenLongLived: 'Setup Token（长期有效）',
       baseUrl: 'Base URL',
       baseUrlHint: '留空使用官方 Anthropic API',
+      endpointType: '端点类型',
+      endpointTypeStandard: '标准端点',
+      endpointTypeCoding: 'Coding 端点',
+      endpointTypeHint: '选择 Coding 端点以使用代码优化模型',
       apiKeyRequired: 'API Key *',
       apiKeyPlaceholder: 'sk-ant-api03-...',
       apiKeyHint: '您的 Claude Console API Key',
@@ -3055,6 +3059,9 @@ export default {
         oauthPassthrough: '自动透传（仅替换认证）',
         oauthPassthroughDesc:
           '开启后，该 OpenAI 账号将自动透传请求与响应，仅替换认证并保留计费/并发/审计及必要安全过滤；如遇兼容性问题可随时关闭回滚。',
+        responsesApiSupported: 'Responses API 支持',
+        responsesApiSupportedDesc:
+          '关闭后，该账号将使用 Chat Completions 直转模式（不做协议转换），适用于不支持 Responses API 的第三方兼容上游（如 LM Studio、DeepSeek、Kimi 等）。',
         responsesWebsocketsV2: 'Responses WebSocket v2',
         responsesWebsocketsV2Desc:
           '默认关闭。开启后可启用 responses_websockets_v2 协议能力（受网关全局开关与账号类型开关约束）。',

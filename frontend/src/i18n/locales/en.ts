@@ -2897,6 +2897,10 @@ export default {
       setupTokenLongLived: 'Setup Token (Long-lived)',
       baseUrl: 'Base URL',
       baseUrlHint: 'Leave default for official Anthropic API',
+      endpointType: 'Endpoint Type',
+      endpointTypeStandard: 'Standard',
+      endpointTypeCoding: 'Coding',
+      endpointTypeHint: 'Select Coding endpoint for code-optimized models',
       apiKeyRequired: 'API Key *',
       apiKeyPlaceholder: 'sk-ant-api03-...',
       apiKeyHint: 'Your Claude Console API Key',
@@ -2907,6 +2911,9 @@ export default {
         oauthPassthrough: 'Auto passthrough (auth only)',
         oauthPassthroughDesc:
           'When enabled, this OpenAI account uses automatic passthrough: the gateway forwards request/response as-is and only swaps auth, while keeping billing/concurrency/audit and necessary safety filtering.',
+        responsesApiSupported: 'Responses API Support',
+        responsesApiSupportedDesc:
+          'When disabled, this account uses raw Chat Completions passthrough (no protocol conversion). Suitable for third-party OpenAI-compatible upstreams that do not support the Responses API (e.g., LM Studio, DeepSeek, Kimi).',
         responsesWebsocketsV2: 'Responses WebSocket v2',
         responsesWebsocketsV2Desc:
           'Disabled by default. Enable to allow responses_websockets_v2 capability (still gated by global and account-type switches).',

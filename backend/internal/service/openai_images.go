@@ -737,7 +737,7 @@ func buildOpenAIImagesURL(base string, endpoint string) string {
 	if strings.HasSuffix(normalized, endpoint) || strings.HasSuffix(normalized, relative) {
 		return normalized
 	}
-	if strings.HasSuffix(normalized, "/v1") {
+	if endsWithVersionPath(normalized) {
 		return normalized + relative
 	}
 	return normalized + endpoint

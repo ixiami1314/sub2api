@@ -4937,16 +4937,29 @@ func (s *OpenAIGatewayService) validateUpstreamBaseURL(raw string) (string, erro
 	return normalized, nil
 }
 
+// endsWithVersionPath 检查 URL 路径是否以 /v{digits} 结尾（如 /v1, /v4, /v2 等）。
+// 用于判断 base URL 是否已包含版本路径，避免重复拼接 /v1/。
+func endsWithVersionPath(s string) bool {
+	i := len(s) - 1
+	if i < 2 || s[i] < '0' || s[i] > '9' {
+		return false
+	}
+	for i >= 0 && s[i] >= '0' && s[i] <= '9' {
+		i--
+	}
+	return i >= 1 && s[i] == 'v' && s[i-1] == '/'
+}
+
 // buildOpenAIResponsesURL 组装 OpenAI Responses 端点。
-// - base 以 /v1 结尾：追加 /responses
 // - base 已是 /responses：原样返回
+// - base 以版本路径结尾（/v1, /v4 等）：追加 /responses
 // - 其他情况：追加 /v1/responses
 func buildOpenAIResponsesURL(base string) string {
 	normalized := strings.TrimRight(strings.TrimSpace(base), "/")
 	if strings.HasSuffix(normalized, "/responses") {
 		return normalized
 	}
-	if strings.HasSuffix(normalized, "/v1") {
+	if endsWithVersionPath(normalized) {
 		return normalized + "/responses"
 	}
 	return normalized + "/v1/responses"

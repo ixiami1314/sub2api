@@ -746,6 +746,16 @@ func (a *Account) GetGeminiBaseURL(defaultBaseURL string) string {
 	return baseURL
 }
 
+// GetEndpointType 返回账号的端点类型，默认 "standard"。
+// 存储在 credentials.endpoint_type，与 base_url 同级。
+// 常见值: "standard"(默认)、"coding"(代码优化端点)。
+func (a *Account) GetEndpointType() string {
+	if v := strings.TrimSpace(a.GetCredential("endpoint_type")); v != "" {
+		return v
+	}
+	return "standard"
+}
+
 func (a *Account) GetExtraString(key string) string {
 	if a.Extra == nil {
 		return ""

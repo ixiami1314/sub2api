@@ -28,6 +28,15 @@
 
       <!-- API Key fields (only for apikey type) -->
       <div v-if="account.type === 'apikey'" class="space-y-4">
+        <!-- Endpoint Type -->
+        <div>
+          <label class="input-label">{{ t('admin.accounts.endpointType') }}</label>
+          <select v-model="endpointType" class="input">
+            <option value="standard">{{ t('admin.accounts.endpointTypeStandard') }}</option>
+            <option value="coding">{{ t('admin.accounts.endpointTypeCoding') }}</option>
+          </select>
+          <p class="input-hint">{{ t('admin.accounts.endpointTypeHint') }}</p>
+        </div>
         <div>
           <label class="input-label">{{ t('admin.accounts.baseUrl') }}</label>
           <input
@@ -1317,6 +1326,36 @@
         </div>
       </div>
 
+      <!-- OpenAI Responses API 支持开关 -->
+      <div
+        v-if="account?.platform === 'openai' && account?.type === 'apikey'"
+        class="border-t border-gray-200 pt-4 dark:border-dark-600"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="input-label mb-0">{{ t('admin.accounts.openai.responsesApiSupported') }}</label>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {{ t('admin.accounts.openai.responsesApiSupportedDesc') }}
+            </p>
+          </div>
+          <button
+            type="button"
+            @click="responsesApiSupported = !responsesApiSupported"
+            :class="[
+              'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+              responsesApiSupported ? 'bg-primary-600' : 'bg-gray-200 dark:bg-dark-600'
+            ]"
+          >
+            <span
+              :class="[
+                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                responsesApiSupported ? 'translate-x-5' : 'translate-x-0'
+              ]"
+            />
+          </button>
+        </div>
+      </div>
+
       <!-- OpenAI WS Mode 三态（off/ctx_pool/passthrough） -->
       <div
         v-if="account?.platform === 'openai' && (account?.type === 'oauth' || account?.type === 'apikey')"
@@ -2195,7 +2234,15 @@ interface TempUnschedRuleForm {
 // State
 const submitting = ref(false)
 const editBaseUrl = ref('https://api.anthropic.com')
+const endpointType = ref('standard')
 const editApiKey = ref('')
+
+// 非 standard 端点类型不支持 Responses API，自动关闭开关
+watch(endpointType, (val) => {
+  if (val !== 'standard') {
+    responsesApiSupported.value = false
+  }
+})
 // Bedrock credentials
 const editBedrockAccessKeyId = ref('')
 const editBedrockSecretAccessKey = ref('')
@@ -2271,6 +2318,8 @@ const customBaseUrl = ref('')
 
 // OpenAI 自动透传开关（OAuth/API Key）
 const openaiPassthroughEnabled = ref(false)
+// OpenAI Responses API 支持开关（API Key）
+const responsesApiSupported = ref(true)
 const openAICompactMode = ref<OpenAICompactMode>('auto')
 const openaiOAuthResponsesWebSocketV2Mode = ref<OpenAIWSMode>(OPENAI_WS_MODE_OFF)
 const openaiAPIKeyResponsesWebSocketV2Mode = ref<OpenAIWSMode>(OPENAI_WS_MODE_OFF)
@@ -2478,6 +2527,7 @@ const syncFormFromAccount = (newAccount: Account | null) => {
 
   // Load OpenAI passthrough toggle (OpenAI OAuth/API Key)
   openaiPassthroughEnabled.value = false
+  responsesApiSupported.value = true
   openAICompactMode.value = 'auto'
   openAICompactModelMappings.value = []
   openaiOAuthResponsesWebSocketV2Mode.value = OPENAI_WS_MODE_OFF
@@ -2487,6 +2537,7 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   webSearchEmulationMode.value = 'default'
   if (newAccount.platform === 'openai' && (newAccount.type === 'oauth' || newAccount.type === 'apikey')) {
     openaiPassthroughEnabled.value = extra?.openai_passthrough === true || extra?.openai_oauth_passthrough === true
+    responsesApiSupported.value = extra?.openai_responses_supported !== false
     openAICompactMode.value = (extra?.openai_compact_mode as OpenAICompactMode) || 'auto'
     openaiOAuthResponsesWebSocketV2Mode.value = resolveOpenAIWSModeFromExtra(extra, {
       modeKey: 'openai_oauth_responses_websockets_v2_mode',
@@ -2592,6 +2643,7 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   // Initialize API Key fields for apikey type
   if (newAccount.type === 'apikey' && newAccount.credentials) {
     const credentials = newAccount.credentials as Record<string, unknown>
+    endpointType.value = (credentials.endpoint_type as string) || 'standard'
     const platformDefaultUrl =
       newAccount.platform === 'openai'
         ? 'https://api.openai.com'
@@ -2722,6 +2774,7 @@ const syncFormFromAccount = (newAccount: Account | null) => {
           ? 'https://generativelanguage.googleapis.com'
           : 'https://api.anthropic.com'
     editBaseUrl.value = platformDefaultUrl
+    endpointType.value = 'standard'
 
     // Load model mappings for OpenAI OAuth accounts
     if (newAccount.platform === 'openai' && newAccount.credentials) {
@@ -3227,7 +3280,8 @@ const handleSubmit = async () => {
       // Always update credentials for apikey type to handle model mapping changes
       const newCredentials: Record<string, unknown> = {
         ...currentCredentials,
-        base_url: newBaseUrl
+        base_url: newBaseUrl,
+        endpoint_type: endpointType.value
       }
 
       // Handle API key
@@ -3603,6 +3657,11 @@ const handleSubmit = async () => {
       } else {
         delete newExtra.openai_passthrough
         delete newExtra.openai_oauth_passthrough
+      }
+      if (responsesApiSupported.value) {
+        newExtra.openai_responses_supported = true
+      } else {
+        newExtra.openai_responses_supported = false
       }
       if (openAICompactMode.value === 'auto') {
         delete newExtra.openai_compact_mode

@@ -70,6 +70,16 @@ func (s *AccountTestService) ProbeOpenAIAPIKeyResponsesSupport(ctx context.Conte
 		return
 	}
 
+	// 如果 extra 中已有明确值（用户通过 UI 手动设置），跳过探测以尊重用户选择。
+	// 仅在值缺失时（新账号或未设置过）才执行自动探测。
+	if _, exists := account.Extra[openai_compat.ExtraKeyResponsesSupported]; exists {
+		logger.LegacyPrintf("service.openai_probe",
+			"probe_skip_manual_override: account_id=%d existing_value=%v",
+			accountID, account.Extra[openai_compat.ExtraKeyResponsesSupported],
+		)
+		return
+	}
+
 	apiKey := account.GetOpenAIApiKey()
 	if apiKey == "" {
 		logger.LegacyPrintf("service.openai_probe", "probe_skip_no_apikey: account_id=%d", accountID)
